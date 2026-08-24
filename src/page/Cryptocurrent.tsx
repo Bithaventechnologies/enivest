@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
@@ -103,7 +104,7 @@ const CryptoMarketOverview: React.FC = React.memo(() => {
   }
 
   return (
-    <div className="bg-black text-white p-6  mt-16 w-full">
+    <div className="bg-black text-white p-6   w-full">
       <h2 className="text-2xl font-semibold text-center mb-6">
         Crypto Market Overview
       </h2>

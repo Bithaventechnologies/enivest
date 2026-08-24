@@ -198,7 +198,7 @@ const Portfolio = () => {
   const nav = useNavigate();
 
   return (
-    <div className="relative w-full min- flex flex-col items-center text-white mt-12 ">
+    <div className="relative w-full min- flex flex-col items-center text-white ">
       {/* Background Video */}
       <video
         autoPlay
