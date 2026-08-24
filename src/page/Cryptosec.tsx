@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
@@ -113,8 +114,8 @@ const CryptoMarketTable = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden w-full border border-white/10 rounded-lg shadow-lg">
-          <table className="w-full">
+        <div className="w-full overflow-x-auto border border-white/10 rounded-lg shadow-lg">
+          <table className="w-full min-w-[700px]">
             <thead>
               <tr className="bg-[#161616] border-b border-white/10 text-left text-gray-400 text-sm">
                 <th className="py-3 pl-6">#</th>

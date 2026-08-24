@@ -157,7 +157,10 @@ const Header = () => {
               <div className="flex flex-col p-6 gap-4">
                 {menuItems.map((item, index) => (
                   <motion.button
-                    onClick={() => nav(item.path)}
+                    onClick={() => {
+                      nav(item.path);
+                      setIsMenuOpen(false);
+                    }}
                     key={index}
                     whileTap={{ scale: 0.98 }}
                     className={`py-2 px-4 rounded-lg text-center ${
@@ -174,7 +177,11 @@ const Header = () => {
                   <div className="flex flex-col gap-3 pt-4 border-t border-white/10">
                     <motion.button
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => setIsAuthModalOpen(true)}
+                      onClick={() => {
+                        setIsAuthModalOpen(true);
+                        setIsMenuOpen(false);
+                      }}
+
                       className="py-2 text-gray-300 hover:text-white transition-colors"
                     >
                       Login
@@ -182,7 +189,10 @@ const Header = () => {
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       className="py-2 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg font-medium"
-                      onClick={() => setIsAuthModalOpen(true)}
+                      onClick={() => {
+                        setIsAuthModalOpen(true);
+                        setIsMenuOpen(false);
+                      }}
                     >
                       Get Started
                     </motion.button>
