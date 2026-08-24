@@ -1,0 +1,61 @@
+.react-inputs-validation__error {
+  color: #ff4c4c;
+}
+
+.react-inputs-validation__error input {
+  border-color: #ff4c4c;
+}
+
+/* Ensure the container spans full width and matches your input design */
+.phone-input-custom {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  height: 46px;
+
+  border: 1px solid gray;
+  border-radius: 7px;
+  background: transparent;
+  padding: 0 12px;
+}
+
+/* Style the input within PhoneInput */
+.phone-input-custom input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: gray;
+  background: transparent;
+}
+
+/* Placeholder text style */
+.phone-input-custom input::placeholder {
+  color: #888888;
+}
+
+/* Remove spinner in number inputs for better look */
+.phone-input-custom input[type="number"]::-webkit-inner-spin-button,
+.phone-input-custom input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.PhoneInputCountry {
+  color: gray;
+}
+
+/* Optional: Focused state
+.phone-input-custom:focus-within {
+  /* border-color: blue; Add a focus color */
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="number"]:hover,
+input[type="number"]:focus {
+  -moz-appearance: textfield;
+  -webkit-appearance: none;
+  appearance: none;
+}
