@@ -56,8 +56,8 @@ const Settings = () => {
 
       const data = response.data.data[0];
 
-      if (data) {
-        setWalletAddresses({
+      if (data) {     
+            setWalletAddresses({
           eth: data.eth || "",
           usdt: data.usdt || "",
           usdc: data.usdc || "",

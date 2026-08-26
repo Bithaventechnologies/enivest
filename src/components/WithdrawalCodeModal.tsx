@@ -3,7 +3,6 @@ import {
   AlertTriangle,
   ArrowDownToLine,
   Check,
-  
   Info,
   Wallet,
   X,
@@ -15,7 +14,7 @@ interface WithdrawalCodeModalProps {
   onVerify: (withdrawal: WithdrawalData) => void;
   onClose: () => void;
 
-  // Optional - pass the user's actual available balance
+  // User's actual available balance
   availableBalance?: number;
 }
 
@@ -38,7 +37,6 @@ type Asset = {
   bgColor: string;
   borderColor: string;
 };
-
 
 const assets: Asset[] = [
   {
@@ -98,53 +96,122 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
   const [amount, setAmount] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [destinationTag, setDestinationTag] = useState("");
-  const [showAssetDropdown, setShowAssetDropdown] = useState(false);
   const [touched, setTouched] = useState(false);
 
+  /*
+   * Reset the form whenever the modal is closed.
+   */
   useEffect(() => {
     if (!show) {
       setSelectedAsset(assets[0]);
       setAmount("");
       setWalletAddress("");
       setDestinationTag("");
-      setShowAssetDropdown(false);
       setTouched(false);
     }
   }, [show]);
 
-  const numericAmount = Number(amount);
-
-  const fee = selectedAsset.fee;
-
-  const receivedAmount = useMemo(() => {
-    if (!numericAmount || numericAmount <= 0) {
+  /*
+   * Convert amount safely to a number.
+   */
+  const numericAmount = useMemo(() => {
+    if (!amount.trim()) {
       return 0;
     }
 
-    return Math.max(numericAmount - fee, 0);
-  }, [numericAmount, fee]);
+    const parsed = Number(amount);
 
+    return Number.isFinite(parsed) ? parsed : 0;
+  }, [amount]);
+
+  const fee = selectedAsset.fee;
+
+  /*
+   * Amount must:
+   * - exist
+   * - be greater than zero
+   * - not exceed available balance
+   * - be greater than the withdrawal fee
+   */
   const isAmountValid =
-    numericAmount > 0 && numericAmount <= availableBalance;
+    numericAmount > 0 &&
+    Number.isFinite(numericAmount) &&
+    numericAmount <= availableBalance &&
+    numericAmount > fee;
 
+  /*
+   * Amount validation used specifically for enabling
+   * the Continue CTA.
+   *
+   * This is intentionally NOT checking the wallet address.
+   *
+   * UX:
+   *
+   * Select asset
+   *      ↓
+   * Enter valid amount
+   *      ↓
+   * Continue becomes active
+   *      ↓
+   * User clicks Continue
+   *      ↓
+   * Wallet/address validation happens
+   */
+  const canContinue = isAmountValid;
+
+  /*
+   * Calculate how much the user will receive after the fee.
+   */
+  const receivedAmount = useMemo(() => {
+    if (!isAmountValid) {
+      if (numericAmount <= 0) {
+        return 0;
+      }
+
+      return Math.max(numericAmount - fee, 0);
+    }
+
+    return numericAmount - fee;
+  }, [numericAmount, fee, isAmountValid]);
+
+  /*
+   * Wallet address validation.
+   */
   const isAddressValid = useMemo(() => {
     const address = walletAddress.trim();
 
-    if (!address) return false;
+    if (!address) {
+      return false;
+    }
 
     switch (selectedAsset.symbol) {
       case "BTC":
-        // Basic Bitcoin address validation.
+        /*
+         * Basic Bitcoin validation.
+         * Supports:
+         * - Legacy addresses: 1...
+         * - P2SH addresses: 3...
+         * - Bech32 addresses: bc1...
+         */
         return /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,87}$/.test(address);
 
       case "ETH":
+        /*
+         * Ethereum address:
+         * 0x + 40 hexadecimal characters
+         */
         return /^0x[a-fA-F0-9]{40}$/.test(address);
 
       case "XRP":
+        /*
+         * XRP Ledger classic address.
+         */
         return /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(address);
 
       case "USDT":
-        // TRC20 addresses normally begin with T.
+        /*
+         * USDT on TRON/TRC20.
+         */
         return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address);
 
       default:
@@ -152,28 +219,57 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
     }
   }, [walletAddress, selectedAsset.symbol]);
 
+  /*
+   * XRP destination tag is optional.
+   *
+   * If supplied, it must contain numbers only.
+   */
   const isXrpTagValid =
     selectedAsset.symbol !== "XRP" ||
     destinationTag.trim() === "" ||
     /^\d+$/.test(destinationTag.trim());
 
+  /*
+   * Full form validation.
+   *
+   * This is intentionally separate from canContinue.
+   */
   const isFormValid =
-    isAmountValid &&
-    isAddressValid &&
-    isXrpTagValid &&
-    numericAmount > fee;
+    isAmountValid && isAddressValid && isXrpTagValid;
 
+  /*
+   * Change selected asset.
+   */
   const handleAssetChange = (asset: Asset) => {
+    if (isVerifying) {
+      return;
+    }
+
     setSelectedAsset(asset);
     setWalletAddress("");
     setDestinationTag("");
     setAmount("");
     setTouched(false);
-    setShowAssetDropdown(false);
   };
 
+  /*
+   * Handle amount input.
+   *
+   * Allows:
+   * 123
+   * 123.
+   * 123.45
+   *
+   * Rejects:
+   * 12abc
+   * 1..2
+   * -10
+   */
   const handleAmountChange = (value: string) => {
-    // Only allow numbers and decimal point
+    if (isVerifying) {
+      return;
+    }
+
     if (!/^\d*\.?\d*$/.test(value)) {
       return;
     }
@@ -181,10 +277,40 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
     setAmount(value);
   };
 
+  /*
+   * Submit.
+   *
+   * The button can become active after a valid amount,
+   * but we perform the complete validation here.
+   */
   const handleSubmit = () => {
     setTouched(true);
 
-    if (!isFormValid) {
+    /*
+     * Do not continue if amount itself is invalid.
+     */
+    if (!isAmountValid) {
+      return;
+    }
+
+    /*
+     * Wallet address is required.
+     */
+    if (!walletAddress.trim()) {
+      return;
+    }
+
+    /*
+     * Wallet address must match the selected network.
+     */
+    if (!isAddressValid) {
+      return;
+    }
+
+    /*
+     * XRP tag must be valid if provided.
+     */
+    if (!isXrpTagValid) {
       return;
     }
 
@@ -203,10 +329,21 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
     onVerify(withdrawalData);
   };
 
+  /*
+   * Set amount to available balance.
+   */
   const handleMaxAmount = () => {
+    if (isVerifying || availableBalance <= 0) {
+      return;
+    }
+
     setAmount(availableBalance.toFixed(selectedAsset.decimals));
+    setTouched(true);
   };
 
+  /*
+   * Address placeholder based on selected asset.
+   */
   const getAddressPlaceholder = () => {
     switch (selectedAsset.symbol) {
       case "BTC":
@@ -226,9 +363,18 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
     }
   };
 
+  /*
+   * Get wallet address error.
+   */
   const getAddressError = () => {
-    if (!touched || !walletAddress) {
+    if (!touched) {
       return null;
+    }
+
+    const address = walletAddress.trim();
+
+    if (!address) {
+      return "Please enter a destination wallet address.";
     }
 
     if (!isAddressValid) {
@@ -251,6 +397,44 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
     }
 
     return null;
+  };
+
+  /*
+   * Amount error.
+   */
+  const getAmountError = () => {
+    if (!touched) {
+      return null;
+    }
+
+    if (!amount.trim()) {
+      return "Please enter a withdrawal amount.";
+    }
+
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return "Please enter a valid withdrawal amount.";
+    }
+
+    if (numericAmount > availableBalance) {
+      return "Amount exceeds your available balance.";
+    }
+
+    if (numericAmount <= fee) {
+      return `Amount must be greater than the withdrawal fee of ${fee} ${selectedAsset.symbol}.`;
+    }
+
+    return null;
+  };
+
+  /*
+   * Close modal.
+   */
+  const handleClose = () => {
+    if (isVerifying) {
+      return;
+    }
+
+    onClose();
   };
 
   return (
@@ -283,9 +467,10 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isVerifying}
-              className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg p-2 transition-colors disabled:opacity-50"
+              className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Close withdrawal modal"
             >
               <X className="w-5 h-5" />
             </button>
@@ -331,7 +516,7 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
                       isSelected
                         ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30"
                         : "border-gray-700 bg-gray-800/50 hover:border-gray-600 hover:bg-gray-800"
-                    } disabled:opacity-50`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {isSelected && (
                       <div className="absolute top-2 right-2">
@@ -341,13 +526,11 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
                       </div>
                     )}
 
-                  <div
-  className={`flex items-center justify-center w-10 h-10 rounded-xl mb-2 text-xl font-bold border ${
-    asset.bgColor
-  } ${asset.borderColor} ${asset.color}`}
->
-  {asset.icon}
-</div>
+                    <div
+                      className={`flex items-center justify-center w-10 h-10 rounded-xl mb-2 text-xl font-bold border ${asset.bgColor} ${asset.borderColor} ${asset.color}`}
+                    >
+                      {asset.icon}
+                    </div>
 
                     <p className="text-white font-semibold text-sm">
                       {asset.symbol}
@@ -392,7 +575,10 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
           {/* Amount */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-300">
+              <label
+                htmlFor="withdrawal-amount"
+                className="text-sm font-medium text-gray-300"
+              >
                 Withdrawal Amount
               </label>
 
@@ -407,6 +593,7 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
 
             <div className="relative">
               <input
+                id="withdrawal-amount"
                 type="text"
                 inputMode="decimal"
                 value={amount}
@@ -414,11 +601,14 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
                 onBlur={() => setTouched(true)}
                 disabled={isVerifying}
                 placeholder="0.00"
+                autoComplete="off"
                 className={`w-full bg-gray-800 border rounded-xl pl-4 pr-24 py-3.5 text-white text-lg focus:outline-none focus:ring-1 transition-all ${
-                  touched && !isAmountValid
+                  getAmountError()
                     ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                    : "border-gray-700 focus:border-blue-500 focus:ring-blue-500"
-                }`}
+                    : isAmountValid
+                      ? "border-green-500/50 focus:border-green-500 focus:ring-green-500"
+                      : "border-gray-700 focus:border-blue-500 focus:ring-blue-500"
+                } disabled:opacity-50`}
               />
 
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -426,7 +616,7 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
                   type="button"
                   onClick={handleMaxAmount}
                   disabled={isVerifying || availableBalance <= 0}
-                  className="text-xs font-medium text-blue-400 hover:text-blue-300 disabled:opacity-50"
+                  className="text-xs font-medium text-blue-400 hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   MAX
                 </button>
@@ -437,55 +627,56 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
               </div>
             </div>
 
-            {touched && numericAmount <= 0 && (
+            {getAmountError() && (
               <p className="text-xs text-red-400 mt-2">
-                Please enter a withdrawal amount.
+                {getAmountError()}
               </p>
             )}
 
-            {touched &&
-              numericAmount > availableBalance &&
-              availableBalance > 0 && (
-                <p className="text-xs text-red-400 mt-2">
-                  Amount exceeds your available balance.
-                </p>
-              )}
-
-            {touched &&
-              numericAmount > 0 &&
-              numericAmount <= fee && (
-                <p className="text-xs text-red-400 mt-2">
-                  Amount must be greater than the withdrawal fee of{" "}
-                  {fee} {selectedAsset.symbol}.
-                </p>
-              )}
+            {!getAmountError() && isAmountValid && (
+              <p className="text-xs text-green-400 mt-2">
+                Amount is valid. You can continue.
+              </p>
+            )}
           </div>
 
           {/* Wallet Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="withdrawal-wallet-address"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
               Destination Wallet Address
             </label>
 
             <input
+              id="withdrawal-wallet-address"
               type="text"
               value={walletAddress}
-              onChange={(e) => setWalletAddress(e.target.value.trim())}
+              onChange={(e) => setWalletAddress(e.target.value)}
               onBlur={() => setTouched(true)}
               disabled={isVerifying}
               placeholder={getAddressPlaceholder()}
+              autoComplete="off"
+              spellCheck={false}
               className={`w-full bg-gray-800 border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 transition-all ${
                 getAddressError()
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                   : isAddressValid
                     ? "border-green-500/50 focus:border-green-500 focus:ring-green-500"
                     : "border-gray-700 focus:border-blue-500 focus:ring-blue-500"
-              }`}
+              } disabled:opacity-50`}
             />
 
             {getAddressError() && (
               <p className="text-xs text-red-400 mt-2">
                 {getAddressError()}
+              </p>
+            )}
+
+            {isAddressValid && (
+              <p className="text-xs text-green-400 mt-2">
+                Wallet address looks valid.
               </p>
             )}
 
@@ -505,7 +696,10 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
           {/* XRP Destination Tag */}
           {selectedAsset.symbol === "XRP" && (
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label
+                htmlFor="xrp-destination-tag"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
                 Destination Tag / Memo
                 <span className="text-gray-500 font-normal ml-1">
                   (if required)
@@ -513,21 +707,25 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
               </label>
 
               <input
+                id="xrp-destination-tag"
                 type="text"
                 inputMode="numeric"
                 value={destinationTag}
                 onChange={(e) => {
-                  if (/^\d*$/.test(e.target.value)) {
-                    setDestinationTag(e.target.value);
+                  const value = e.target.value;
+
+                  if (/^\d*$/.test(value)) {
+                    setDestinationTag(value);
                   }
                 }}
                 disabled={isVerifying}
                 placeholder="Enter destination tag"
+                autoComplete="off"
                 className={`w-full bg-gray-800 border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 transition-all ${
                   touched && !isXrpTagValid
                     ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                     : "border-gray-700 focus:border-blue-500 focus:ring-blue-500"
-                }`}
+                } disabled:opacity-50`}
               />
 
               <p className="text-xs text-gray-500 mt-2">
@@ -553,7 +751,9 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
 
             <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Asset</span>
+                <span className="text-sm text-gray-400">
+                  Asset
+                </span>
 
                 <span className="text-sm font-medium text-white">
                   {selectedAsset.name} ({selectedAsset.symbol})
@@ -561,7 +761,9 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Network</span>
+                <span className="text-sm text-gray-400">
+                  Network
+                </span>
 
                 <span className="text-sm text-gray-300">
                   {selectedAsset.network}
@@ -619,20 +821,26 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
 
           {/* Actions */}
           <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+            {/* Cancel */}
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isVerifying}
-              className="flex-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50"
+              className="flex-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
 
+            {/* Continue */}
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!isFormValid || isVerifying}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/10"
+              disabled={!canContinue || isVerifying}
+              className={`flex-1 font-medium py-3 px-4 rounded-xl transition-all shadow-lg ${
+                canContinue && !isVerifying
+                  ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20"
+                  : "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
+              }`}
             >
               {isVerifying ? (
                 <span className="flex items-center justify-center gap-2">
@@ -644,18 +852,24 @@ const WithdrawalCodeModal: React.FC<WithdrawalCodeModalProps> = ({
               )}
             </button>
           </div>
+
+          {/* Helpful CTA message */}
+          {!canContinue && !isVerifying && (
+            <p className="text-center text-xs text-gray-500">
+              Enter a valid withdrawal amount to continue.
+            </p>
+          )}
+
+          {canContinue &&
+            !isFormValid &&
+            !isVerifying && (
+              <p className="text-center text-xs text-gray-500">
+                Enter and verify your destination wallet address before
+                submitting.
+              </p>
+            )}
         </div>
       </div>
-
-      {/* Small click-away overlay behavior */}
-      {showAssetDropdown && (
-        <button
-          type="button"
-          aria-label="Close asset selector"
-          onClick={() => setShowAssetDropdown(false)}
-          className="fixed inset-0 -z-10"
-        />
-      )}
     </div>
   );
 };
