@@ -8,7 +8,7 @@ import { TbPackages } from "react-icons/tb";
 import { NavLink, useNavigate } from "react-router-dom";
 import { FiUsers } from "react-icons/fi";
 import Cookies from "js-cookie";
-import { Settings, Award } from "lucide-react";
+import { Settings, Award, List } from "lucide-react";
 
 // import { useDispatch } from "react-redux";
 // import { clearAdmin } from "../Global/AdminSlice";
@@ -45,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
     // { name: "My Assets", icon: <BiMoneyWithdraw />, path: "assets" },
     { name: "All Wallets", icon: <PiSwap />, path: "all-wallets" },
     { name: "Manage User Wallets", icon: <TbPackages />, path: "deposit-user" },
-    // { name: "All History", icon: <TbPackages />, path: "all-history" },
+    { name: "All History", icon: <List />, path: "all-history" },
     {
       name: "Pending Transactions",
       icon: <MdPending />,

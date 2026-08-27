@@ -41,6 +41,7 @@ import About from "../page/About.tsx";
 import TermsPrivacy from "../page/TermsPrivacy.tsx";
 import Xrp from "../page/Connect/Xrp.tsx";
 import SecuredSlots from "../Admin/SecuredSlots.tsx";
+import GetTransactions from "../Admin/history.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -197,6 +198,10 @@ export const router = createBrowserRouter([
       {
         path: "pending-kycs",
         element: <PendingKyc />,
+      },
+      {
+        path: "all-history",
+        element: <GetTransactions/>,
       },
       {
         path: "admin-settings",

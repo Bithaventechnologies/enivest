@@ -64,7 +64,7 @@ import SwapTokenModal from "../components/SwapTokenModal";
 import { useCryptoRates } from "../components/useCryptoRates";
 import Transactions from "../components/Transaction";
 import KycModal from "../components/KycModal";
-import WithdrawalCodeModal, { WithdrawalData } from "../components/WithdrawalCodeModal";
+import WithdrawalCodeModal, { WithdrawalRequest } from "../components/WithdrawalCodeModal";
 import TokenDistributionModal from "../components/TokenDistributionModal";
 
 // Utility functions for mock fluctuations
@@ -156,6 +156,10 @@ const useBlockchainData = (address: string, chainId: number) => {
   const [user, setUser] = useState<any>([]);
 
   const TOKEN_IDS = ["bitcoin", "ethereum", "tether", "solana", "ripple"];
+
+
+  
+
 
   const getUserProfile = async () => {
     try {
@@ -341,6 +345,9 @@ const useBlockchainData = (address: string, chainId: number) => {
       console.error("Error fetching transactions:", err);
     }
   };
+
+
+
 
   const fetchNFTs = async () => {
     const mockNFTs = [
@@ -809,7 +816,7 @@ export default function CryptoWalletDashboard() {
     setShowCodeModal(true);
   };
 
-  const handleWithdrawalSubmit = async (withdrawal: WithdrawalData) => {
+  const handleWithdrawalSubmit = async (withdrawal: WithdrawalRequest) => {
   setIsVerifying(true);
 
   try {
@@ -1847,9 +1854,10 @@ export default function CryptoWalletDashboard() {
 
         <WithdrawalCodeModal
   show={showCodeModal}
-  isVerifying={isVerifying}
-  availableBalance={Number(user?.btcBalance || 0)}
-  onVerify={handleWithdrawalSubmit}
+  transactions={transactions}
+
+
+
   onClose={() => setShowCodeModal(false)}
 /> 
 
