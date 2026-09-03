@@ -1,6 +1,10 @@
 import { motion } from "framer-motion";
 import Videobac from "../assets/profit-loss-banner.webm";
+import { useNavigate } from "react-router-dom";
 const ProfitLossAnalysis = () => {
+
+
+  const nav = useNavigate()
   return (
     <section className="relative bg-gradient-to-b from-black via-gray-900 to-black text-white py-24 px-6 overflow-hidden">
       {/* Animated background elements */}
@@ -71,6 +75,7 @@ const ProfitLossAnalysis = () => {
 
           {/* Button */}
           <motion.button
+            onClick={() => nav('/connect/binance')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="group relative px-8 py-4 overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white font-semibold shadow-lg"
