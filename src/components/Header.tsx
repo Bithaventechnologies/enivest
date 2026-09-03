@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
+import {  FaBars, FaTimes } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import AuthModal from "./AuthModal"; // Import modal component
@@ -9,14 +9,14 @@ import logo from "../assets/coinstat_logo.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  // const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [token] = useState<string | undefined>(Cookies.get("authToken"));
   const location = useLocation();
 
   const menuItems = [
     { title: "Portfolio Tracker", isPrimary: true, path: "portfolio" },
-    { title: "Swap", path: "swap" },
+    // { title: "Swap", path: "swap" },
     { title: "Cryptocurrencies", path: "allcurrency" },
     { title: "About", path: "about" },
   ];
@@ -79,7 +79,7 @@ const Header = () => {
           </div>
 
           {/* Search Bar */}
-          <motion.div
+          {/* <motion.div
             className={`hidden md:flex items-center px-4 py-2.5 rounded-xl border transition-all duration-300 ${
               isSearchFocused
                 ? "bg-white/10 border-orange-500/50"
@@ -98,7 +98,7 @@ const Header = () => {
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
             />
-          </motion.div>
+          </motion.div> */}
 
           {/* Right Side */}
           <div className="flex items-center gap-6">
