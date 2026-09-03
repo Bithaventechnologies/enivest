@@ -288,6 +288,9 @@ const Portfolio = () => {
 export default Portfolio;
 
 const DeFiAssetsSection = () => {
+
+
+  const nav = useNavigate()
   return (
     <motion.div
       className="w-full flex flex-col md:flex-row items-center  text-white py-12 px-6 md:px-16 mt-20 rounded-3xl shadow-xl "
@@ -337,6 +340,7 @@ const DeFiAssetsSection = () => {
         </p>
 
         <motion.button
+        onClick={()=> nav('/connect/binance')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="mt-6 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md"

@@ -140,7 +140,7 @@ const UserHeader: React.FC<UserHedeprops> = ({ active, setActive }) => {
               <AnimatePresence>
                 {showMenu && (
                   <motion.div
-                    className="dropDown-dashboard w-[15rem] h-[13rem] flex justify-around items-start px-4 flex-col bg-white shadow-md absolute top-11 right-[-20%] z-40"
+                    className="dropDown-dashboard w-[15rem] h-[13rem] flex justify-around items-start px-4 flex-col bg-white shadow-md absolute top-11 right-[-20%] z-[9999]"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}

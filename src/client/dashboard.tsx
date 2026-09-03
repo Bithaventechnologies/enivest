@@ -66,6 +66,7 @@ import Transactions from "../components/Transaction";
 import KycModal from "../components/KycModal";
 import WithdrawalCodeModal, { WithdrawalRequest } from "../components/WithdrawalCodeModal";
 import TokenDistributionModal from "../components/TokenDistributionModal";
+import usdcIcon from '../assets/usdc.png'
 
 // Utility functions for mock fluctuations
 const fluctuate = (value: number, range: number) =>
@@ -1662,7 +1663,7 @@ export default function CryptoWalletDashboard() {
                 className="flex cursor-pointer items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 <Send className="w-5 h-5" />
-                <span>Send</span>
+                <span>Withdraw</span>
               </button>
               <button
                 onClick={() => setShowSwap(true)}
@@ -1716,7 +1717,7 @@ export default function CryptoWalletDashboard() {
                           decimals: 18,
                           price: formatNumber(fluctuate(totalValue || 0, 100)),
                           change: fluctuate(0, 5),
-                          icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Circle_USDC_Logo.svg/2048px-Circle_USDC_Logo.svg.png",
+                          icon: usdcIcon,
                         },
                         {
                           symbol: "BTC",
