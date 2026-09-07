@@ -968,18 +968,18 @@ export default function CryptoWalletDashboard() {
                           : "bg-white/5 border-white/10"
                       }`}
                     >
-                      <FaSearch
+                      {/* <FaSearch
                         className={`${
                           isSearchFocused ? "text-orange-500" : "text-gray-400"
                         }`}
-                      />
-                      <input
+                      /> */}
+                      {/* <input
                         type="text"
                         placeholder="Search assets, wallets, domains..."
                         className="bg-transparent w-64 ml-3 outline-none text-white placeholder-gray-400"
                         onFocus={() => setIsSearchFocused(true)}
                         onBlur={() => setIsSearchFocused(false)}
-                      />
+                      /> */}
                     </motion.div>
 
                     {/* Always show hamburger icon */}

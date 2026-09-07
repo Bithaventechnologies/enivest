@@ -14,6 +14,55 @@ import { toast } from "react-toastify";
    TYPES
 ========================================================= */
 
+
+/* =========================================================
+   CRYPTO LOGO ICONS (inline SVG)
+========================================================= */
+
+const BtcLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 32 32" className={className} xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#F7931A" />
+    <path
+      fill="#FFF"
+      d="M23.19 14.02c.32-2.15-1.31-3.31-3.55-4.08l.72-2.9-1.77-.44-.7 2.82c-.47-.12-.95-.23-1.43-.33l.7-2.83-1.77-.44-.72 2.9c-.39-.09-.77-.17-1.14-.27l-2.44-.61-.47 1.89s1.31.3 1.29.32c.72.18.85.65.83 1.03l-.83 3.31c.05.01.11.03.19.06l-.19-.05-1.16 4.65c-.09.22-.31.54-.81.42.02.02-1.29-.32-1.29-.32l-.88 2.02 2.3.57c.43.11.85.22 1.26.33l-.73 2.93 1.77.44.72-2.9c.49.13.96.25 1.42.37l-.72 2.89 1.77.44.73-2.93c3.02.57 5.29.34 6.25-2.39.77-2.2-.04-3.47-1.63-4.3 1.16-.27 2.03-1.03 2.26-2.6zm-4.05 5.68c-.55 2.2-4.25 1.01-5.45.71l.97-3.9c1.2.3 5.05.9 4.48 3.19zm.55-5.71c-.5 2-3.58.99-4.58.73l.88-3.53c1 .25 4.22.72 3.7 2.8z"
+    />
+  </svg>
+);
+
+const EthLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 32 32" className={className} xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#627EEA" />
+    <g fill="#FFF" fillRule="nonzero">
+      <path fillOpacity="0.6" d="M16.5 4v8.87l7.5 3.35z" />
+      <path d="M16.5 4L9 16.22l7.5-3.35z" />
+      <path fillOpacity="0.6" d="M16.5 21.97v6.03L24 17.62z" />
+      <path d="M16.5 28v-6.03L9 17.62z" />
+      <path fillOpacity="0.2" d="M16.5 20.57l7.5-4.35-7.5-3.34z" />
+      <path fillOpacity="0.6" d="M9 16.22l7.5 4.35v-7.69z" />
+    </g>
+  </svg>
+);
+
+const XrpLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 32 32" className={className} xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#23292F" />
+    <path
+      fill="#FFF"
+      d="M22.5 9h2.7l-5.6 5.5c-2 2-5.2 2-7.2 0L6.8 9h2.7l4.25 4.2c1.25 1.23 3.25 1.23 4.5 0L22.5 9zM9.4 23h-2.7l5.65-5.55c2-1.96 5.2-1.96 7.2 0L25.2 23h-2.7l-4.25-4.18c-1.25-1.23-3.25-1.23-4.5 0L9.4 23z"
+    />
+  </svg>
+);
+
+const UsdtLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg viewBox="0 0 32 32" className={className} xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#26A17B" />
+    <path
+      fill="#FFF"
+      d="M17.9 17.4v-.01c-.11.01-.68.04-1.94.04-1.01 0-1.72-.03-1.97-.04v.02c-3.26-.14-5.69-.72-5.69-1.4 0-.69 2.43-1.26 5.69-1.4v2.23c.25.02.98.06 1.99.06 1.2 0 1.8-.05 1.92-.06v-2.23c3.25.14 5.68.71 5.68 1.4 0 .68-2.42 1.26-5.68 1.39zm0-3.03v-2h4.54V9.4H9.55v2.97h4.54v2c-3.69.17-6.47.9-6.47 1.77s2.78 1.6 6.47 1.77v6.32h3.35v-6.32c3.68-.17 6.45-.9 6.45-1.77s-2.77-1.6-6.45-1.77z"
+    />
+  </svg>
+);
+
 export type Currency = "BTC" | "ETH" | "XRP" | "USDT";
 
 export type WithdrawalNetwork =
@@ -71,7 +120,7 @@ interface Asset {
   symbol: Currency;
   name: string;
   network: WithdrawalNetwork;
-  icon: string;
+ Icon: React.FC<{ className?: string }>;
   fee: number;
   decimals: number;
   textColor: string;
@@ -84,7 +133,7 @@ const assets: Asset[] = [
     symbol: "BTC",
     name: "Bitcoin",
     network: "Bitcoin",
-    icon: "₿",
+    Icon: BtcLogo,
     fee: 0.0001,
     decimals: 8,
     textColor: "text-orange-400",
@@ -95,7 +144,7 @@ const assets: Asset[] = [
     symbol: "ETH",
     name: "Ethereum",
     network: "Ethereum",
-    icon: "Ξ",
+    Icon: EthLogo,
     fee: 0.002,
     decimals: 6,
     textColor: "text-purple-400",
@@ -106,7 +155,7 @@ const assets: Asset[] = [
     symbol: "XRP",
     name: "XRP",
     network: "XRP Ledger",
-    icon: "X",
+    Icon: XrpLogo,
     fee: 0.25,
     decimals: 6,
     textColor: "text-gray-200",
@@ -117,7 +166,7 @@ const assets: Asset[] = [
     symbol: "USDT",
     name: "Tether",
     network: "TRON (TRC20)",
-    icon: "₮",
+    Icon: UsdtLogo,
     fee: 1,
     decimals: 2,
     textColor: "text-green-400",
@@ -125,7 +174,6 @@ const assets: Asset[] = [
     borderColor: "border-green-500/40",
   },
 ];
-
 /* =========================================================
    COMPONENT
 ========================================================= */
@@ -888,7 +936,7 @@ const handleSubmit = async () => {
                       <div
                         className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl border text-xl font-bold ${asset.bgColor} ${asset.borderColor} ${asset.textColor}`}
                       >
-                        {asset.icon}
+                       <asset.Icon className="h-full w-full" />
                       </div>
 
                       <p className="text-sm font-semibold text-white">
@@ -921,7 +969,7 @@ const handleSubmit = async () => {
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-xl border text-lg font-bold ${selectedAsset.bgColor} ${selectedAsset.borderColor} ${selectedAsset.textColor}`}
                 >
-                  {selectedAsset.icon}
+                  <selectedAsset.Icon className="h-full w-full" />
                 </div>
 
                 <div>
@@ -931,10 +979,9 @@ const handleSubmit = async () => {
                   </p>
 
                   <p className="mt-0.5 text-base font-semibold text-white">
-                    {formatAmount(
+                      ${formatAmount(
                       availableBalance,
                     )}{" "}
-                    {selectedAsset.symbol}
                   </p>
 
                 </div>
@@ -1262,12 +1309,12 @@ const handleSubmit = async () => {
                 </span>
 
                 <span className="text-sm text-gray-300">
-                  {formatAmount(
+                  ${formatAmount(
                     availableBalance,
                   )}{" "}
-                  {
+                  {/* {
                     selectedAsset.symbol
-                  }
+                  } */}
                 </span>
               </div>
 
@@ -1277,15 +1324,15 @@ const handleSubmit = async () => {
                 </span>
 
                 <span className="text-sm font-medium text-white">
-                  {numericAmount >
+                  ${numericAmount >
                   0
                     ? formatAmount(
                         numericAmount,
                       )
                     : "0"}{" "}
-                  {
+                  {/* {
                     selectedAsset.symbol
-                  }
+                  } */}
                 </span>
               </div>
 
@@ -1295,12 +1342,12 @@ const handleSubmit = async () => {
                 </span>
 
                 <span className="text-sm text-gray-300">
-                  {
+                  ${
                     withdrawalFee
                   }{" "}
-                  {
+                  {/* {
                     selectedAsset.symbol
-                  }
+                  } */}
                 </span>
               </div>
 
@@ -1313,15 +1360,15 @@ const handleSubmit = async () => {
                   </span>
 
                   <span className="text-base font-semibold text-green-400">
-                    {receivedAmount >
+                    ${receivedAmount >
                     0
                       ? formatAmount(
                           receivedAmount,
                         )
                       : "0"}{" "}
-                    {
+                    {/* {
                       selectedAsset.symbol
-                    }
+                    } */}
                   </span>
 
                 </div>
