@@ -5,8 +5,8 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { currencyFormatter } from "./depositUser";
-import { useCryptoRates } from "../components/useCryptoRates";
 import AdminPageHeader from "./AdminPageHeader";
+import { getUsdPortfolioTotal } from "../utils/portfolioBalance";
 
 interface User {
   _id: string;
@@ -39,8 +39,6 @@ const Users = () => {
   const [token] = useState<string | undefined>(Cookies.get("authToken"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { ethToUsdt, usdtToUsdt, solToUsdt, btcToUsdt, usdcToUsdt } =
-    useCryptoRates();
 
   useEffect(() => {
     if (!token) return;
@@ -126,13 +124,7 @@ const Users = () => {
     ...user,
     "S/N": index + 1,
     name: (user?.name || "").toUpperCase(),
-    total: currencyFormatter.format(
-      (user.ethBalance || 0) * ethToUsdt +
-        (user.usdtBalance || 0) * usdtToUsdt +
-        (user.usdcBalance || 0) * usdcToUsdt +
-        (user.solBalance || 0) * solToUsdt +
-        (user.btcBalance || 0) * btcToUsdt,
-    ),
+    total: currencyFormatter.format(getUsdPortfolioTotal(user)),
     kycFee: (
       <div className="flex items-center gap-2">
         <input
