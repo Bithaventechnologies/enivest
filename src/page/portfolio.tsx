@@ -16,6 +16,7 @@ import backgroundVideo from "../assets/portfolio-landing-intro-video.webm";
 import phonemock from "../assets/portfolio-total-asset-banner.avif";
 import existstrategy from "../assets/exit-strategy.avif";
 import { useNavigate } from "react-router-dom";
+import { CONNECT_PORTFOLIO_PATH } from "../constants/portfolio";
 import bybit from "../assets/bybit_dark.png";
 import bitget from "../assets/bitget_dark.png";
 import trustWallet from "../assets/trust_dark.png";
@@ -26,7 +27,7 @@ import mexc from "../assets/mexcglobal_dark.png";
 import okx from "../assets/okex_dark.png";
 import blofin from "../assets/blofin_dark.png";
 
-const wallets = [
+export const wallets = [
   {
     name: "Binance",
     img: Binace,
@@ -192,6 +193,20 @@ export const OtherWallet: Wallet[] = [
   },
 ];
 
+export type PortfolioProvider = Pick<Wallet, "name" | "img" | "path">;
+
+const hasConnectionPath = (
+  wallet: { name: string; img: string; path?: string },
+): wallet is PortfolioProvider => wallet.name !== "More" && Boolean(wallet.path);
+
+export const portfolioProviders: PortfolioProvider[] = [
+  ...wallets.filter(hasConnectionPath),
+  ...OtherWallet,
+].filter(
+  (wallet, index, providers) =>
+    providers.findIndex((provider) => provider.path === wallet.path) === index,
+);
+
 const Portfolio = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -340,7 +355,7 @@ const DeFiAssetsSection = () => {
         </p>
 
         <motion.button
-        onClick={()=> nav('/connect/binance')}
+        onClick={() => nav(CONNECT_PORTFOLIO_PATH)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="mt-6 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md"

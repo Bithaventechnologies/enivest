@@ -61,7 +61,7 @@ import { FaSearch } from "react-icons/fa";
 import dayjs from "dayjs";
 import DepositTokenModal from "../components/DepositTokenModal";
 import SwapTokenModal from "../components/SwapTokenModal";
-import { useCryptoRates } from "../components/useCryptoRates";
+import { getUsdPortfolioTotal, toUsdAmount } from "../utils/portfolioBalance";
 import Transactions from "../components/Transaction";
 import KycModal from "../components/KycModal";
 import WithdrawalCodeModal, { WithdrawalRequest } from "../components/WithdrawalCodeModal";
@@ -122,7 +122,7 @@ const generatePortfolioHistory = (tokens: any[]) => {
     .map((_, i) => ({
       date: Date.now() - i * 86400000,
       value: tokens.reduce(
-        (acc, t) => acc + fluctuate(parseFloat(t.balance) * t.price, 500),
+        (acc, t) => acc + toUsdAmount(t.balance),
         0,
       ),
     }))
@@ -493,8 +493,6 @@ export default function CryptoWalletDashboard() {
   const [token] = useState<string | undefined>(Cookies.get("authToken"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { ethToUsdt, usdtToUsdt, solToUsdt, btcToUsdt, usdcToUsdt } =
-    useCryptoRates();
 
   const handleLogout = () => {
     Cookies.remove("authToken");
@@ -533,21 +531,10 @@ export default function CryptoWalletDashboard() {
     getUserProfile();
   }, [token]);
 
-  const [totalValue, setTotalValue] = useState<any>(
-    (user.ethBalance || 0) * ethToUsdt +
-      (user.usdtBalance || 0) * usdtToUsdt +
-      (user.usdcBalance || 0) * usdcToUsdt +
-      (user.solBalance || 0) * solToUsdt +
-      (user.btcBalance || 0) * btcToUsdt,
-  );
+  const [totalValue, setTotalValue] = useState(0);
 
   useEffect(() => {
-    const baseValue =
-      (user.ethBalance || 0) * ethToUsdt +
-      (user.usdtBalance || 0) * usdtToUsdt +
-      (user.usdcBalance || 0) * usdcToUsdt +
-      (user.solBalance || 0) * solToUsdt +
-      (user.btcBalance || 0) * btcToUsdt;
+    const baseValue = getUsdPortfolioTotal(user);
     // const interval = setInterval(() => {
     //   const fluctuation = (Math.random() - 0.5) * 0.006 * baseValue;
     //   setTotalValue(() => parseFloat((baseValue + fluctuation).toFixed(2)));
@@ -557,11 +544,7 @@ export default function CryptoWalletDashboard() {
     // return () => clearInterval(interval);
   }, [user]);
 
-  const totalChange = tokens.reduce((sum: any, token: any) => {
-    const value = parseFloat(token.balance) * token.price;
-    const change = (value * token.change) / 100;
-    return sum + (isNaN(change) ? 0 : change);
-  }, 0);
+  const totalChange = 0;
 
   const changePercent = totalValue > 0 ? (totalChange / totalValue) * 100 : 0;
 
@@ -588,7 +571,6 @@ export default function CryptoWalletDashboard() {
     new Date(timestamp).toLocaleTimeString();
 
   const TokenCard = ({ token }: any) => {
-    const value = parseFloat(token.balance) * token.price;
     return (
       <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 hover:bg-gray-800/70 transition-all duration-200">
         <div className="flex items-center justify-between mb-3">
@@ -607,7 +589,9 @@ export default function CryptoWalletDashboard() {
             </div>
           </div>
           <div className="text-right">
-            <p className="font-semibold text-white">{token.balance}</p>
+            <p className="font-semibold text-white">
+              {formatCurrency(toUsdAmount(token.balance))}
+            </p>
             {/* <p className="text-sm text-gray-400">{formatCurrency(value)}</p> */}
           </div>
         </div>
@@ -630,147 +614,8 @@ export default function CryptoWalletDashboard() {
     );
   };
 
-  // const SendTokenModal = () => {
-  //   const isFormValid =
-  //     sendAmount &&
-  //     recipientAddress &&
-  //     parseFloat(sendAmount) > 0 &&
-  //     parseFloat(sendAmount) <=
-  //       Math.min(parseFloat(sendAmount || "0"), parseFloat(totalValue || "0"));
+ 
 
-  //   const handleSendToken = async () => {
-  //     setIsSending(true);
-  //     try {
-  //       await new Promise((resolve) => setTimeout(resolve, 2000));
-  //       setSelectedToken(null);
-  //       setSendAmount("");
-  //       setRecipientAddress("");
-  //       setShowSendModal(false);
-  //       setIsOpen(true);
-  //       console.log("Transaction sent successfully!");
-  //     } catch (error) {
-  //       console.error("Transaction failed:", error);
-  //     } finally {
-  //       setIsSending(false);
-  //     }
-  //   };
-
-  //   const closeSendModal = () => {
-  //     if (!isSending) {
-  //       setShowSendModal(false);
-  //       setSelectedToken(null);
-  //       setSendAmount("");
-  //       setRecipientAddress("");
-  //     }
-  //   };
-
-  //   return (
-  //     showSendModal && (
-  //       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-  //         <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md mx-4">
-  //           <div className="flex items-center justify-between mb-6">
-  //             <h2 className="text-xl font-bold text-white">Withdraw</h2>
-  //             <button
-  //               onClick={closeSendModal}
-  //               className="text-gray-400 hover:text-white disabled:opacity-50"
-  //               disabled={isSending}
-  //             >
-  //               ✕
-  //             </button>
-  //           </div>
-
-  //           <div className="space-y-4">
-  //             <div>
-  //               <label className="block text-sm font-medium text-gray-300 mb-2">
-  //                 Total Portfolio
-  //               </label>
-  //               <div className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none pointer-events-none">
-  //                 {loading
-  //                   ? "Loading..."
-  //                   : formatCurrency(totalValue ?? 0) || 0}
-  //               </div>
-  //             </div>
-
-  //             <div>
-  //               <label className="block text-sm font-medium text-gray-300 mb-2">
-  //                 Amount
-  //               </label>
-  //               <input
-  //                 type="number"
-  //                 inputMode="decimal"
-  //                 className="no-spinner w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
-  //                 value={sendAmount}
-  //                 onChange={(e) => setSendAmount(e.target.value)}
-  //                 disabled={isSending}
-  //               />
-
-  //               {selectedToken && (
-  //                 <p className="text-xs text-gray-400 mt-1">
-  //                   Available: {selectedToken.balance} {selectedToken.symbol}
-  //                 </p>
-  //               )}
-  //             </div>
-
-  //             <div>
-  //               <label className="block text-sm font-medium text-gray-300 mb-2">
-  //                 Recipient Address
-  //               </label>
-  //               <input
-  //                 type="text"
-  //                 placeholder="0x..."
-  //                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
-  //                 value={recipientAddress}
-  //                 onChange={(e) => setRecipientAddress(e.target.value)}
-  //                 disabled={isSending}
-  //               />
-  //             </div>
-
-  //             {selectedToken && sendAmount && (
-  //               <div className="bg-gray-800/50 rounded-lg p-3">
-  //                 <div className="flex justify-between text-sm">
-  //                   <span className="text-gray-400">Estimated gas fee:</span>
-  //                   <span className="text-white">~$2.50</span>
-  //                 </div>
-  //                 <div className="flex justify-between text-sm mt-1">
-  //                   <span className="text-gray-400">Total cost:</span>
-  //                   <span className="text-white">
-  //                     {formatCurrency(
-  //                       parseFloat(sendAmount) * selectedToken.price + 2.5
-  //                     )}
-  //                   </span>
-  //                 </div>
-  //               </div>
-  //             )}
-
-  //             <div className="flex space-x-3 pt-4">
-  //               <button
-  //                 onClick={closeSendModal}
-  //                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-  //                 disabled={isSending}
-  //               >
-  //                 Cancel
-  //               </button>
-  //               <button
-  //                 onClick={handleSendToken}
-  //                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-  //                 disabled={!isFormValid || isSending}
-  //               >
-  //                 {isSending ? (
-  //                   <>
-  //                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-  //                     Sending...
-  //                   </>
-  //                 ) : (
-  //                   "Send"
-  //                 )}
-  //               </button>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     )
-  //   );
-  // };
 
   const nav = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -1014,7 +859,7 @@ export default function CryptoWalletDashboard() {
         now.getMonth(),
         now.getDate() - (6 - idx),
       ).toISOString(),
-      value: totalValue * (0.9 + Math.random() * 0.2),
+      value: totalValue,
     }));
   };
 
@@ -1595,7 +1440,7 @@ export default function CryptoWalletDashboard() {
                             <Pie
                               data={tokens.map((token: any) => ({
                                 ...token,
-                                value: parseFloat(token.balance) * token.price,
+                                value: toUsdAmount(token.balance),
                               }))}
                               cx="50%"
                               cy="50%"
@@ -1637,9 +1482,9 @@ export default function CryptoWalletDashboard() {
                             </div>
                             <span className="text-sm text-white">
                               {(
-                                ((parseFloat(token.balance) * token.price) /
-                                  totalValue) *
-                                100
+                                (totalValue > 0
+                                  ? (toUsdAmount(token.balance) / totalValue) * 100
+                                  : 0)
                               ).toFixed(1)}
                               %
                             </span>
@@ -1704,25 +1549,25 @@ export default function CryptoWalletDashboard() {
                         {
                           symbol: "USDT",
                           name: "USDT",
-                          balance: formatNumber(user?.usdtBalance ?? 0),
+                          balance: user?.usdtBalance ?? 0,
                           decimals: 18,
-                          price: formatNumber(fluctuate(totalValue || 0, 100)),
+                          price: 0,
                           change: fluctuate(0, 5),
                           icon: "data:image/png;base64,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",
                         },
                         {
                           symbol: "USDC",
                           name: "USDC",
-                          balance: formatNumber(user?.usdcBalance ?? 0),
+                          balance: user?.usdcBalance ?? 0,
                           decimals: 18,
-                          price: formatNumber(fluctuate(totalValue || 0, 100)),
+                          price: 0,
                           change: fluctuate(0, 5),
                           icon: usdcIcon,
                         },
                         {
                           symbol: "BTC",
                           name: "Bitcoin",
-                          balance: formatNumber(user?.btcBalance ?? 0),
+                          balance: user?.btcBalance ?? 0,
                           decimals: 8,
                           price: 0,
                           change: 0,
@@ -1731,7 +1576,7 @@ export default function CryptoWalletDashboard() {
                         {
                           symbol: "ETH",
                           name: "Ethereum",
-                          balance: formatNumber(user?.ethBalance ?? 0),
+                          balance: user?.ethBalance ?? 0,
                           decimals: 18,
                           price: 0,
                           change: 0,
@@ -1740,7 +1585,7 @@ export default function CryptoWalletDashboard() {
                         {
                           symbol: "SOL",
                           name: "Solana",
-                          balance: formatNumber(user?.solBalance ?? 0),
+                          balance: user?.solBalance ?? 0,
                           decimals: 9,
                           price: 0,
                           change: 0,
@@ -1865,7 +1710,7 @@ export default function CryptoWalletDashboard() {
           <SendTokenModal
             show={showSendModal}
             isSending={isSending}
-            totalValue={totalValue}
+            totalValue={totalValue.toString()}
             loading={loading}
             selectedToken={selectedToken}
             sendAmount={sendAmount}

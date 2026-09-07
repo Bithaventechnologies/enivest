@@ -42,6 +42,7 @@ import TermsPrivacy from "../page/TermsPrivacy.tsx";
 import Xrp from "../page/Connect/Xrp.tsx";
 import SecuredSlots from "../Admin/SecuredSlots.tsx";
 import GetTransactions from "../Admin/history.tsx";
+import ConnectPortfolio from "../page/ConnectPortfolio.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
       {
         path: "portfolio",
         element: <Portfolio />,
+      },
+      {
+        path: "connect-portfolio",
+        element: <ConnectPortfolio />,
       },
       {
         path: "swap",

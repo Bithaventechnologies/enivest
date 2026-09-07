@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Table from "../components/Table";
 import Cookies from "js-cookie";
-import { useCryptoRates } from "../components/useCryptoRates";
 import AdminPageHeader from "./AdminPageHeader";
+import { getUsdPortfolioTotal } from "../utils/portfolioBalance";
 
 const ManageUserFunds = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -17,8 +17,6 @@ const ManageUserFunds = () => {
   const [transactionType, setTransactionType] = useState<
     "deposit" | "withdraw"
   >("deposit");
-  const { ethToUsdt, usdtToUsdt, solToUsdt, btcToUsdt, usdcToUsdt, xrpToUsdt } =
-    useCryptoRates();
 
   const [token] = useState<string | undefined>(Cookies.get("authToken"));
 
@@ -88,12 +86,12 @@ const ManageUserFunds = () => {
     { key: "S/N", title: "S/N" },
     { key: "name", title: "Full Name" },
     { key: "email", title: "Email" },
-    { key: "btcBalance", title: "BTC Balance" },
-    { key: "usdtBalance", title: "USDT Balance" },
-    { key: "usdcBalance", title: "USDC Balance" },
-    { key: "ethBalance", title: "ETH Balance" },
-    { key: "xrpBalance", title: "XRP Balance" },
-    { key: "solBalance", title: "SOL Balance" },
+    { key: "btcBalance", title: "BTC Balance (USD)" },
+    { key: "usdtBalance", title: "USDT Balance (USD)" },
+    { key: "usdcBalance", title: "USDC Balance (USD)" },
+    { key: "ethBalance", title: "ETH Balance (USD)" },
+    { key: "xrpBalance", title: "XRP Balance (USD)" },
+    { key: "solBalance", title: "SOL Balance (USD)" },
     { key: "total", title: "Total Portfolio" },
     { key: "action", title: "Action" },
   ];
@@ -102,20 +100,13 @@ const ManageUserFunds = () => {
     "S/N": index + 1,
     ...user,
     name: (user?.name || "").toUpperCase(),
-    ethBalance: formatBalance(user.ethBalance, "ETH"),
-    usdtBalance: formatBalance(user.usdtBalance, "USDT"),
-    usdcBalance: formatBalance(user.usdcBalance, "USDC"),
-    solBalance: formatBalance(user.solBalance, "SOL"),
-    xrpBalance: formatBalance(user.xrpBalance, "XRP"),
-    btcBalance: formatBalance(user.btcBalance, "BTC"),
-    total: currencyFormatter.format(
-      (user.ethBalance || 0) * ethToUsdt +
-        (user.usdtBalance || 0) * usdtToUsdt +
-        (user.usdcBalance || 0) * usdcToUsdt +
-        (user.xrpBalance || 0) * xrpToUsdt +
-        (user.solBalance || 0) * solToUsdt +
-        (user.btcBalance || 0) * btcToUsdt,
-    ),
+    ethBalance: currencyFormatter.format(user.ethBalance || 0),
+    usdtBalance: currencyFormatter.format(user.usdtBalance || 0),
+    usdcBalance: currencyFormatter.format(user.usdcBalance || 0),
+    solBalance: currencyFormatter.format(user.solBalance || 0),
+    xrpBalance: currencyFormatter.format(user.xrpBalance || 0),
+    btcBalance: currencyFormatter.format(user.btcBalance || 0),
+    total: currencyFormatter.format(getUsdPortfolioTotal(user)),
     action: (
       <button
         className="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 shadow-md transition"
