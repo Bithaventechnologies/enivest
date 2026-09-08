@@ -1066,12 +1066,12 @@ const handleSubmit = async () => {
               <span className="text-xs text-gray-500">
                 Available:{" "}
                 <span className="text-gray-300">
-                  {formatAmount(
+                 ${formatAmount(
                     availableBalance,
                   )}{" "}
-                  {
+                  {/* {
                     selectedAsset.symbol
-                  }
+                  } */}
                 </span>
               </span>
 

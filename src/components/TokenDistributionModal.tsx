@@ -92,9 +92,10 @@ const TokenDistributionModal: React.FC<TokenDistributionModalProps> = ({
       await onSlotSecured(numAmount);
       setIsProcessing(false);
       setStep("success");
-    } catch (err: any) {
-      setError(err.message || "Failed to secure slot. Please try again.");
-      setIsProcessing(false);
+    } catch (err: any) 
+    { const backendMessage = err?.response?.data?.message || err?.message || "Failed to secure slot. Please try again."; 
+      setError(backendMessage)
+      setIsProcessing(false); 
       setStep("amount");
     }
   };
@@ -249,26 +250,31 @@ const TokenDistributionModal: React.FC<TokenDistributionModalProps> = ({
 
             {/* Amount Input */}
             <div className="space-y-3">
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Investment Amount (USD)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-12 text-gray-400 text-lg">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    className="no-spinner w-full bg-gray-800 border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-lg font-semibold"
-                    placeholder="5000"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    min={MIN_AMOUNT}
-                    max={MAX_AMOUNT}
-                  />
-                </div>
-              </div>
+          
+<div className="relative">
+  <label className="block text-sm font-medium text-gray-300 mb-2">
+    Investment Amount (USD)
+  </label>
+
+  <div className="relative">
+    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-medium pointer-events-none">
+      $
+    </span>
+
+    <input
+      type="number"
+      inputMode="decimal"
+      className="no-spinner w-full bg-gray-800 border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-lg font-semibold"
+      placeholder="5000"
+      value={amount}
+      onChange={handleAmountChange}
+      min={MIN_AMOUNT}
+      max={MAX_AMOUNT}
+    />
+  </div>
+</div>
+
+
 
               {/* Amount Info */}
               <div className="text-sm text-gray-400 space-y-1">
