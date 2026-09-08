@@ -90,8 +90,8 @@ const Transactions = ({ transactions }: any) => {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-white">
-                        {numberFormatter(transaction.amount)}{" "}
-                        {transaction.currency}
+                       ${numberFormatter(transaction.amount)}{" "}
+                        {/* {transaction.currency} */}
                       </p>
                       <p
                         className={`text-sm ${
