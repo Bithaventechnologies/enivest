@@ -66,11 +66,11 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
       icon: <Award />,
       path: "secured-slots",
     },
-    // {
-    //   name: "Withdraw History",
-    //   icon: <TbPackages />,
-    //   path: "withdraw-history",
-    // },
+    {
+      name: "Pending Users",
+      icon: <TbPackages />,
+      path: "pending-users",
+    },
     // { name: "Plans", icon: <TbPackages />, path: "plans" },
     // { name: "Create Plan", icon: <FaPlus />, path: "createplan" },
     // {

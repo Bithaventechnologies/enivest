@@ -43,6 +43,7 @@ import Xrp from "../page/Connect/Xrp.tsx";
 import SecuredSlots from "../Admin/SecuredSlots.tsx";
 import GetTransactions from "../Admin/history.tsx";
 import ConnectPortfolio from "../page/ConnectPortfolio.tsx";
+import Pendingusers from "../Admin/Pendingusers.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -199,6 +200,11 @@ export const router = createBrowserRouter([
       {
         path: "pending-withdraw",
         element: <PendingWithdrawals />,
+      },
+      {
+
+        path : "pending-users",
+        element: <Pendingusers/>
       },
       {
         path: "pending-kycs",
